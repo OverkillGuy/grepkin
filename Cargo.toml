@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 gherkin = {version = "0.11", features = ["serde", "parser"]}
+regex = "1"
