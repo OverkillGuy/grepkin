@@ -1,0 +1,5 @@
+# Docker should ignore everything but Cargo.toml + lock + src/
+*
+!Cargo.toml
+!Cargo.lock
+!src/
