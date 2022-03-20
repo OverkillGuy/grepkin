@@ -1,5 +1,5 @@
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
 use gherkin;
 use regex::Regex;
@@ -14,8 +14,7 @@ fn approximately_eq(reference: &gherkin::Feature, other: &gherkin::Feature) -> b
         && reference.background == other.background
         && reference.description == other.description;
     // Assuming scenarios come out in same order = zip-able
-    let are_scenarios_equal: bool =
-        reference.scenarios.iter()
+    let are_scenarios_equal: bool = reference.scenarios.iter()
                            .zip(other.scenarios.iter())
                            .map(|s| s.0.keyword == s.1.keyword
                                 && s.0.name == s.1.name
@@ -39,15 +38,22 @@ fn extract_gherkin_text(text: &str) -> String {
     let gherkin_comments_regex = Regex::new(gherkin_regex_str.as_str()).unwrap();
     gherkin_comments_regex
         .captures_iter(text)
-        .map(|cap| format!("{}{}\n", &cap[1], // newline-separated keyword+text concat
-                           // Remove Python docstring delimiters at the end of line
-                           &cap[2].trim_end_matches("\"\"\"")))
+        .map(|cap| {
+            format!(
+                "{}{}\n",
+                &cap[1], // newline-separated keyword+text concat
+                // Remove Python docstring delimiters at the end of line
+                &cap[2].trim_end_matches("\"\"\"")
+            )
+        })
         .collect()
 }
 
 fn main() {
     let feature_file = Path::new("features/checking_guess_valid_word.feature");
-    let env = gherkin::GherkinEnv::new("en").ok().expect("Failed to get Gherkin environment");
+    let env = gherkin::GherkinEnv::new("en")
+        .ok()
+        .expect("Failed to get Gherkin environment");
     let feature_parsed = gherkin::Feature::parse_path(feature_file, env).unwrap();
     println!("Feature says:\n{:?}", feature_parsed);
 
@@ -56,11 +62,15 @@ fn main() {
     let gherkin_test_matches = extract_gherkin_text(&test_text);
     println!("Test matches:\n{}", gherkin_test_matches);
 
-    let test_env = gherkin::GherkinEnv::new("en").ok().expect("Failed to get Gherkin environment");
+    let test_env = gherkin::GherkinEnv::new("en")
+        .ok()
+        .expect("Failed to get Gherkin environment");
     // Assumes a single Feature per test file, assumes feature is present, no raw Scenarios
     let test_parsed = gherkin::Feature::parse(gherkin_test_matches, test_env).unwrap();
     println!("Test says:\n{:?}", test_parsed);
-    println!("Naive equality: {}\nCustom, approximate, match: {}",
-             test_parsed == feature_parsed,
-             approximately_eq(&test_parsed, &feature_parsed));
+    println!(
+        "Naive equality: {}\nCustom, approximate, match: {}",
+        test_parsed == feature_parsed,
+        approximately_eq(&test_parsed, &feature_parsed)
+    );
 }
