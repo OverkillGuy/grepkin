@@ -1,4 +1,4 @@
-FROM rust:1.59-buster as builder
+FROM rust:1.59-slim-buster as builder
 WORKDIR /app
 COPY Cargo.toml Cargo.lock /app/
 COPY src/ /app/src/
