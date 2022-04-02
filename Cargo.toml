@@ -9,3 +9,12 @@ edition = "2021"
 [dependencies]
 gherkin = {version = "0.11", features = ["serde", "parser"]}
 regex = "1"
+globwalk = "0.8.1"
+
+[lib]
+name = "grepkin"
+path = "src/lib.rs"
+
+[[bin]]
+name = "grepkin_bin"
+path = "src/main.rs"

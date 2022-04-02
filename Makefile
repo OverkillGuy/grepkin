@@ -5,7 +5,11 @@ check:
 	cargo check
 
 lint:
-	pre-commit run --all --all-files
+	cargo +nightly fmt
+	cargo clippy
+
+# lint:
+# 	pre-commit run --all --all-files
 
 build:
 	cargo build
