@@ -5,5 +5,5 @@ COPY src/ /app/src/
 RUN cargo build --release
 
 FROM gcr.io/distroless/cc as runtime
-COPY --from=builder /app/target/release/gherkin_testcomments /
-CMD ["./gherkin_testcomments"]
+COPY --from=builder /app/target/release/grepkin /
+CMD ["./grepkin"]

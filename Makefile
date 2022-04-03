@@ -1,5 +1,5 @@
 # Default make target, does everything useful, and installs pre-commit hooks
-all: check lint install-precommit-hooks build test deb
+all: check lint install-precommit-hooks build run
 
 check:
 	cargo check
@@ -13,6 +13,9 @@ lint:
 
 build:
 	cargo build
+
+run:
+	cargo run
 
 test:
 	cargo test
@@ -29,7 +32,7 @@ update-precommit:
 	pre-commit autoupdate
 
 build-docker:
-	docker build -t gherkin_testcomments .
+	docker build -t grepkin .
 
 PWD=$(shell pwd)
 USERID=$(shell id -u)
@@ -40,6 +43,6 @@ run-docker: build-docker
 		-v "${PWD}/tests/:/tests/" \
 		-v "${PWD}/features/:/features/" \
 		-u "${USERID}:${GROUPID}" \
-		gherkin_testcomments
+		grepkin
 
-.PHONY: all check lint install-precommit-hooks build test deb update-precommit build-docker run-docker
+.PHONY: all check lint install-precommit-hooks run build test deb update-precommit build-docker run-docker

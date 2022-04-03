@@ -1,4 +1,5 @@
-use grepkin::{approximately_eq, GherkinProject};
+use grepkin::compare::approximately_eq;
+use grepkin::GherkinProject;
 
 fn main() {
     // Parse the project's feature files + test code
@@ -13,9 +14,11 @@ fn main() {
     );
     // Compare the reference to the actual features
     println!("Reference: {:?}\nParsed:    {:?}", &reference, &parsed);
+    let feature_equals: bool = approximately_eq(parsed, reference); // Igores these mismatching, focus on content
     println!(
         "Naive equality: {}\nCustom, approximate, match: {}",
-        parsed == reference,                 // Mismatching span + linecol + path
-        approximately_eq(parsed, reference)  // Igores these mismatching, focus on content
+        parsed == reference, // Mismatching span + linecol + path
+        feature_equals
     );
+    std::process::exit(if feature_equals { 0 } else { 1 });
 }

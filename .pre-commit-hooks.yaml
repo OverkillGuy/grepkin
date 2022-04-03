@@ -1,12 +1,12 @@
--   id: gherkin-testcomments
-    name: gherkin-testcomments
-    description: Validate files against bleeeh
-    entry: gherkin_testcomments
+-   id: grepkin
+    name: grepkin
+    description: Validate Gherkin in test code against reference Feature files
+    entry: grepkin
     language: rust
     pass_filenames: false
--   id: gherkin-testcomments-dockerfile
-    name: gherkin-testcomments-dockerfile
-    description: Validate files against bleeeh via Dockerfile
-    entry: /gherkin_testcomments
+-   id: grepkin-dockerfile
+    name: grepkin-dockerfile
+    description: Validate Gherkin in test code against reference Feature files via Dockerfile
+    entry: /grepkin
     language: docker
     pass_filenames: false
