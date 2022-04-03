@@ -1,12 +1,14 @@
-use grepkin::{approximately_eq, extract_gherkin_text, filter_gherkin_text};
+use grepkin::{
+    approximately_eq, extract_gherkin_text, filter_gherkin_text, fix_docstrings,
+    parse_features_glob,
+};
 
 use std::{fs, path};
 
 fn main() {
-    // let features = parse_features_glob("features/*.feature");
-    // for feature in features {
-    //     println!("Feature filesays:\n{:?}", feature);
-    // }
+    let features = parse_features_glob("features/*.feature");
+    let feature_ref = features.get(0);
+    println!("Feature file says:\n{:?}", &feature_ref);
     // for feature_file_maybe in globwalk::glob("features/*.feature").unwrap() {
     //     let feature_file = feature_file_maybe.expect("Error getting the file");
     //     println!("Feature: '{}'", feature_file.file_name().to_str().unwrap());
@@ -32,16 +34,18 @@ fn main() {
 
     let gherkin_filtered = filter_gherkin_text(&test_text);
     let extracted_gherkin_str = extract_gherkin_text(&gherkin_filtered);
-    let extracted_gherkin =
-        gherkin::Feature::parse(extracted_gherkin_str, gherkin::GherkinEnv::default()).unwrap();
+    let extracted_gherkin = fix_docstrings(
+        gherkin::Feature::parse(extracted_gherkin_str, gherkin::GherkinEnv::default()).unwrap(),
+    );
     println!("Extracted: {:?}", &extracted_gherkin);
 
     let filtered_filepath = path::Path::new("tests/test_x.py");
     fs::write(filtered_filepath, &gherkin_filtered).expect("Error writing back filtered gherkin");
 
-    let filtered_gherkin =
+    let filtered_gherkin = fix_docstrings(
         gherkin::Feature::parse_path(filtered_filepath, gherkin::GherkinEnv::default())
-            .expect("Error parsing filtered file into Gherkin Feature");
+            .expect("Error parsing filtered file into Gherkin Feature"),
+    );
 
     println!("Filtered:  {:?}", &filtered_gherkin);
     // TODO assert Gherkin::parse_text(filter_gherkin_text(testfile)) == Gherkin::parse(testfile)

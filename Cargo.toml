@@ -1,14 +1,17 @@
 [package]
-name = "gherkin_testcomments"
-description = "Extract Gherkin Scenarios written as comments in test files"
+name = "grepkin"
+description = "Grep for Gherkin! Extract Gherkin Scenarios written as comments in test files"
 version = "0.1.0"
 authors = ["Jb DOYON <jb@jiby.tech>"]
 license = "GPL-3.0-or-later"
 edition = "2021"
 
 [dependencies]
+# Parse gherkin files into struct
 gherkin = {version = "0.11", features = ["serde", "parser"]}
+# Regex extraction of gherkin-looking strings
 regex = "1"
+# Look for file that could be parsed as gherkin
 globwalk = "0.8.1"
 
 [lib]
@@ -16,5 +19,5 @@ name = "grepkin"
 path = "src/lib.rs"
 
 [[bin]]
-name = "grepkin_bin"
+name = "grepkin"
 path = "src/main.rs"

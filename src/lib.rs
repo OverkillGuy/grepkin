@@ -43,8 +43,7 @@ pub fn extract_gherkin_text(text: &str) -> String {
             format!(
                 "{}{}\n",
                 &cap[1], // newline-separated keyword+text concat
-                // Remove Python docstring delimiters at the end of line
-                &cap[2] // .trim_end_matches("\"\"\"")
+                &cap[2]
             )
         })
         .collect()
@@ -56,8 +55,7 @@ type GherkinRange = (Range<usize>, Range<usize>);
 type GherkinRanges = Vec<GherkinRange>;
 
 fn find_gherkin_text(text: &str) -> GherkinRanges {
-    // Avoid Python docstring delimiters at the end of line = """
-    let gherkin_regex_str = format!(r#".*({})(.*)(""")?"#, GHERKIN_KEYWORDS);
+    let gherkin_regex_str = format!(r#".*({})(.*)"#, GHERKIN_KEYWORDS);
     let gherkin_comments_regex = Regex::new(gherkin_regex_str.as_str()).unwrap();
     gherkin_comments_regex
         .captures_iter(text)
@@ -136,6 +134,21 @@ pub fn filter_gherkin_text(text: &str) -> String {
     }
     // Finally remove the triple-doublequotes = python docstrings
     filled_text // .replace("\"\"\"", "   ")
+}
+
+/// Remove trailing Python docstrings-marker in Feature fields' descriptions
+///
+/// Docstrings are parsed badly due to regex-matching all non-whistepace on a gherkin keyword
+pub fn fix_docstrings(feature: gherkin::Feature) -> gherkin::Feature {
+    let mut cleaned = feature;
+    for scenario in cleaned.scenarios.iter_mut() {
+        let docstring_marker = "\"\"\"";
+        if scenario.name.ends_with(docstring_marker) {
+            let trimmed_name: &str = scenario.name.trim_end_matches(docstring_marker);
+            scenario.name = trimmed_name.to_string();
+        }
+    }
+    cleaned
 }
 
 pub fn parse_features_glob(feature_path_glob: &str) -> Vec<gherkin::Feature> {
