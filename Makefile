@@ -45,4 +45,10 @@ run-docker: build-docker
 		-u "${USERID}:${GROUPID}" \
 		grepkin
 
-.PHONY: all check lint install-precommit-hooks run build test deb update-precommit build-docker run-docker
+run-precommit-rust:
+	pre-commit try-repo . grepkin --verbose --all-files
+
+run-precommit-docker:
+	pre-commit try-repo . grepkin-dockerfile --verbose --all-files
+
+PHONY: all check lint install-precommit-hooks run build test deb update-precommit build-docker run-docker run-precommit-rust run-precommit-docker
