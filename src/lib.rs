@@ -1,7 +1,9 @@
 use regex::Regex;
 use std::ops::Range;
+use std::{fs, path};
 
 /// Gherkin DSL's english keywords
+/// A little extended with Connextra templates
 const GHERKIN_KEYWORDS: &str = "Given|When|Then|And|But|Scenario|Background|Feature|In order \
                                 to|As a|I want to|I need to|So that";
 
@@ -54,6 +56,9 @@ type GherkinRange = (Range<usize>, Range<usize>);
 /// Locations of all Gherkin keyword-description pairs in a text
 type GherkinRanges = Vec<GherkinRange>;
 
+/// Compute which slices of the text contain Gherkin words
+///
+/// Using regex, get keyword + description as separate ranges
 fn find_gherkin_text(text: &str) -> GherkinRanges {
     let gherkin_regex_str = format!(r#".*({})(.*)"#, GHERKIN_KEYWORDS);
     let gherkin_comments_regex = Regex::new(gherkin_regex_str.as_str()).unwrap();
@@ -151,6 +156,9 @@ pub fn fix_docstrings(feature: gherkin::Feature) -> gherkin::Feature {
     cleaned
 }
 
+/// Parse Gherkin features files given a glob
+///
+/// Parse using default Gherkin parser, suitable for actual Feature files, not code
 pub fn parse_features_glob(feature_path_glob: &str) -> Vec<gherkin::Feature> {
     let mut features_parsed: Vec<gherkin::Feature> = vec![];
     for feature_file_maybe in
@@ -163,4 +171,51 @@ pub fn parse_features_glob(feature_path_glob: &str) -> Vec<gherkin::Feature> {
         features_parsed.push(feature_parsed);
     }
     features_parsed
+}
+
+/// Parse Gherkin bits of files given a glob
+///
+/// Greps for Gherkin keywords to support code files with comments-based Gherkin
+pub fn grep_parse_features_glob(code_path_glob: &str) -> Vec<gherkin::Feature> {
+    let mut features_parsed: Vec<gherkin::Feature> = vec![];
+    for code_file_maybe in
+        globwalk::glob(code_path_glob).expect("Error globbing given features folder")
+    {
+        let code_file = code_file_maybe.expect("Error walking to given file in glob");
+        let feature_parsed = parse_gherkin_grep_file(code_file.path());
+        features_parsed.push(feature_parsed);
+    }
+    features_parsed
+}
+
+/// Parse a text into a Gherkin Feature, via regex
+///
+/// Greps for Gherkin keywords, filtering out the non-gherkin lines into a dummy
+/// string, to give an accurate Span/Linecol fields
+pub fn parse_gherkin_grep(text: &str) -> gherkin::Feature {
+    fix_docstrings(
+        gherkin::Feature::parse(filter_gherkin_text(text), gherkin::GherkinEnv::default())
+            .expect("Unable to parse gherkin from filtered keywords of code"),
+    )
+}
+
+/// Parse a single Gherkin code file given its path
+///
+/// Filters it via regex, to support (code) files that would fail parsing via
+/// the default gherkin module's parser, while keeping accurate Span/Linecol,
+/// which extract_gherkin_text would bork (by not keeping non-gherkin file
+/// structure)
+pub fn parse_gherkin_grep_file(file_path: &path::Path) -> gherkin::Feature {
+    let file_text = fs::read_to_string(file_path).expect("Failed to read text file");
+    fix_path(parse_gherkin_grep(&file_text), file_path.to_path_buf())
+}
+
+/// Reset a Feature's path to a specific filepath
+///
+/// The path won't be set right when we parse "raw string" instead of file
+/// as we do when using `filter_gherkin_text`.
+fn fix_path(feature: gherkin::Feature, file_path: path::PathBuf) -> gherkin::Feature {
+    let mut cloned = feature;
+    cloned.path = Some(file_path);
+    cloned
 }
