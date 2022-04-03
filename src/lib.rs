@@ -1,11 +1,37 @@
 use regex::Regex;
+use std::collections::HashSet;
 use std::ops::Range;
 use std::{fs, path};
+
+/// A project's worth of Gherkin features as parsed, split between actual (from
+/// tests) and reference. Assumed parsed via globs
+#[derive(Debug, Clone)]
+pub struct GherkinProject {
+    pub references: HashSet<gherkin::Feature>,
+    pub parsed: HashSet<gherkin::Feature>,
+    pub reference_glob: String,
+    pub parsed_glob: String,
+}
+
+impl GherkinProject {
+    pub fn new(reference_glob: String, parsed_glob: String) -> GherkinProject {
+        let reference_gherkins: HashSet<gherkin::Feature> = parse_features_glob(&reference_glob);
+        let parse_gherkins: HashSet<gherkin::Feature> = grep_parse_features_glob(&parsed_glob);
+        GherkinProject {
+            references: reference_gherkins,
+            parsed: parse_gherkins,
+            reference_glob,
+            parsed_glob,
+        }
+    }
+}
 
 /// Gherkin DSL's english keywords
 /// A little extended with Connextra templates
 const GHERKIN_KEYWORDS: &str = "Given|When|Then|And|But|Scenario|Background|Feature|In order \
                                 to|As a|I want to|I need to|So that";
+
+// TODO assert Gherkin::parse_text(filter_gherkin_text(testfile)) == Gherkin::parse(testfile)
 
 /// Computes equality of gherkin::Feature objects
 /// in terms of Gherkin content
@@ -159,8 +185,8 @@ pub fn fix_docstrings(feature: gherkin::Feature) -> gherkin::Feature {
 /// Parse Gherkin features files given a glob
 ///
 /// Parse using default Gherkin parser, suitable for actual Feature files, not code
-pub fn parse_features_glob(feature_path_glob: &str) -> Vec<gherkin::Feature> {
-    let mut features_parsed: Vec<gherkin::Feature> = vec![];
+pub fn parse_features_glob(feature_path_glob: &str) -> HashSet<gherkin::Feature> {
+    let mut features_parsed: HashSet<gherkin::Feature> = HashSet::new();
     for feature_file_maybe in
         globwalk::glob(feature_path_glob).expect("Error globbing given features folder")
     {
@@ -168,7 +194,7 @@ pub fn parse_features_glob(feature_path_glob: &str) -> Vec<gherkin::Feature> {
         let feature_parsed =
             gherkin::Feature::parse_path(feature_file.path(), gherkin::GherkinEnv::default())
                 .expect("Error parsing file into Gherkin Feature");
-        features_parsed.push(feature_parsed);
+        features_parsed.insert(feature_parsed);
     }
     features_parsed
 }
@@ -176,14 +202,14 @@ pub fn parse_features_glob(feature_path_glob: &str) -> Vec<gherkin::Feature> {
 /// Parse Gherkin bits of files given a glob
 ///
 /// Greps for Gherkin keywords to support code files with comments-based Gherkin
-pub fn grep_parse_features_glob(code_path_glob: &str) -> Vec<gherkin::Feature> {
-    let mut features_parsed: Vec<gherkin::Feature> = vec![];
+pub fn grep_parse_features_glob(code_path_glob: &str) -> HashSet<gherkin::Feature> {
+    let mut features_parsed: HashSet<gherkin::Feature> = HashSet::new();
     for code_file_maybe in
         globwalk::glob(code_path_glob).expect("Error globbing given features folder")
     {
         let code_file = code_file_maybe.expect("Error walking to given file in glob");
         let feature_parsed = parse_gherkin_grep_file(code_file.path());
-        features_parsed.push(feature_parsed);
+        features_parsed.insert(feature_parsed);
     }
     features_parsed
 }
