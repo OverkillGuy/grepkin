@@ -128,7 +128,7 @@ features I want to implement
 -   Ignore list for glob, from config file?
 -   Testing (duh)
 -   Sphinx-needs/mdbook style generation of features + link to test code
-
+-   Use [pytest hooks](https://pytest.org/en/7.1.x/reference/reference.html#test-running-runtest-hooks) to collect test names (filepath, linenum, testname) to compare against gherkin
 
 # License
 
