@@ -35,7 +35,7 @@ tool, and runs it just once (won't affect existing hooks, this is a one-off)
 
 The same process works with a docker image, built live from the repo's Dockerfile (no Rust toolchain required, compiles in docker!):
 
-    pre-commit try-repo /path/to/grepkin-repo grepkin --rev SOMECOMMITHASH  grepkin-dockerfile --verbose --all-files
+    pre-commit try-repo /path/to/grepkin-repo grepkin-dockerfile --rev SOMECOMMITHASH  grepkin-dockerfile --verbose --all-files
 
 If you want to see the pre-commit hook running on the current repo instead of
 another's, take a look at the following `Makefile` targets:
@@ -93,7 +93,8 @@ use grepkin::GherkinProject;
 
 fn main() {
     // Parse the project's feature files + test code
-    let project = GherkinProject::new("features/*.feature".to_string(), "tests/*.py".to_string());
+    let project = GherkinProject::new("features/*.feature".to_string(),
+                                      "tests/*.py".to_string());
     println!("Project:\n{:?}", project);
 }
 ```
