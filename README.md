@@ -17,7 +17,7 @@ reference, or generating test code from given Feature references.
 
 ## Dependencies
 
--   [Rust](https://www.rust-lang.org/) `2021` edition
+-   [Rust](https://www.rust-lang.org/) language, minimum supported Rust version (MSRV) `1.56.1`.
 -   (Optional) [pre-commit](https://pre-commit.com) for setting up `grepkin` as a git hook
 -   (Optional) [Docker](https://www.docker.com/) for running grepkin without installing Rust on system
 

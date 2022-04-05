@@ -5,6 +5,7 @@ version = "0.1.0"
 authors = ["Jb DOYON <jb@jiby.tech>"]
 license = "GPL-3.0-or-later"
 edition = "2021"
+rust-version = "1.56.1"
 
 [dependencies]
 # Parse gherkin files into struct
