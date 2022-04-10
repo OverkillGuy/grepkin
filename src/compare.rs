@@ -38,6 +38,9 @@ pub fn approximately_eq(reference: &gherkin::Feature, other: &gherkin::Feature) 
 mod tests {
     use super::*;
 
+    use treediff::diff;
+    use treediff::tools::Recorder;
+
     #[test]
     fn test_feature_matches_clone() {
         let scenarios = vec![gherkin::Scenario::builder()
@@ -60,5 +63,12 @@ mod tests {
             approximately_eq(&reference, &cloned),
             "Identical feature should match clone"
         );
+        // Try out the treediff tool "recorder" to see the recursive comparisons
+        // See also json-patch lib Delegate impl for example of using Delegate
+        // https://github.com/idubrov/json-patch/blob/dfc8943625bb4349a58f432c76e4ef3b6f6814b8/src/diff.rs#L19
+        let mut record = Recorder::default();
+        diff(&reference, &cloned, &mut record);
+        println!("{:?}", record.calls);
+        assert!(false); // intentional fail to see struct content
     }
 }

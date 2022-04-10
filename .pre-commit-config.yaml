@@ -17,7 +17,7 @@ repos:
           - id: fmt
     - repo: local
       hooks:
-        - id: system
+        - id: clippy
           name: cargo clippy
           description: Run the Clippy linter on the package.
           entry: cargo clippy --all-features --tests

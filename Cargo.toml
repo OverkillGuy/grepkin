@@ -14,6 +14,9 @@ gherkin = {version = "0.11", features = ["serde", "parser"]}
 regex = "1"
 # Look for file that could be parsed as gherkin
 globwalk = "0.8.1"
+# # Feature object-tree diffing (reference.feature vs grepkin test code)
+treediff = "4"
+
 
 [lib]
 name = "grepkin"

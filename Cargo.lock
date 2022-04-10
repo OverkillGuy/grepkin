@@ -96,6 +96,7 @@ dependencies = [
  "gherkin",
  "globwalk",
  "regex",
+ "treediff",
 ]
 
 [[package]]
@@ -314,6 +315,12 @@ checksum = "5516c27b78311c50bf42c071425c560ac799b11c30b31f87e3081965fe5e0180"
 dependencies = [
  "once_cell",
 ]
+
+[[package]]
+name = "treediff"
+version = "4.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52984d277bdf2a751072b5df30ec0377febdb02f7696d64c2d7d54630bac4303"
 
 [[package]]
 name = "typed-builder"
