@@ -33,3 +33,32 @@ pub fn approximately_eq(reference: &gherkin::Feature, other: &gherkin::Feature) 
                            .unwrap();
     is_feature_equal && are_scenarios_equal
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_feature_matches_clone() {
+        let scenarios = vec![gherkin::Scenario::builder()
+            .keyword("Scenario".to_string())
+            .name("Dummy scenario to be representative".to_string())
+            .steps(vec![gherkin::Step::builder()
+                .keyword("When".to_string())
+                .ty(gherkin::StepType::When)
+                .value("something happens".to_string())
+                .build()])
+            .build()];
+        let reference = gherkin::Feature::builder()
+            .keyword("Feature".to_string())
+            .name("Matching a feature with another identical feature".to_string())
+            .description(Some("Bleh".to_string()))
+            .scenarios(scenarios)
+            .build();
+        let cloned = reference.clone();
+        assert!(
+            approximately_eq(&reference, &cloned),
+            "Identical feature should match clone"
+        );
+    }
+}
