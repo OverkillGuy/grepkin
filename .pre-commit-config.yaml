@@ -14,13 +14,23 @@ repos:
       rev: v1.0
       hooks:
           - id: cargo-check
-          - id: fmt
+          # fmt provided locally instead
     - repo: local
       hooks:
         - id: clippy
           name: cargo clippy
           description: Run the Clippy linter on the package.
-          entry: cargo clippy --all-features --tests
+          entry: cargo +nightly clippy
+          args: ["--all-features", "--tests", "--"]
           language: system
-          files: \.rs$
+          types: [rust]
           pass_filenames: false
+    - repo: local
+      hooks:
+        - id: fmt
+          name: cargo fmt
+          description: Format files with cargo fmt.
+          entry: cargo +nightly fmt
+          language: system
+          types: [rust]
+          args: ["--"]
