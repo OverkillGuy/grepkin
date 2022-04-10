@@ -96,6 +96,7 @@ dependencies = [
  "gherkin",
  "globwalk",
  "regex",
+ "serde_json",
  "treediff",
 ]
 
@@ -321,6 +322,9 @@ name = "treediff"
 version = "4.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52984d277bdf2a751072b5df30ec0377febdb02f7696d64c2d7d54630bac4303"
+dependencies = [
+ "serde_json",
+]
 
 [[package]]
 name = "typed-builder"

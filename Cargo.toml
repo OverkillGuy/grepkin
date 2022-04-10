@@ -15,7 +15,8 @@ regex = "1"
 # Look for file that could be parsed as gherkin
 globwalk = "0.8.1"
 # # Feature object-tree diffing (reference.feature vs grepkin test code)
-treediff = "4"
+treediff = {version = "4", features = ["with-serde-json"]}
+serde_json = "*"
 
 
 [lib]
