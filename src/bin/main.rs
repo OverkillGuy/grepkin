@@ -3,7 +3,10 @@ use grepkin::GherkinProject;
 
 fn main() {
     // Parse the project's feature files + test code
-    let project = GherkinProject::new("features/*.feature".to_string(), "tests/*.py".to_string());
+    let project = GherkinProject::new(
+        "features/checking_guess_valid*.feature".to_string(),
+        "tests/*.py".to_string(),
+    );
     println!("Project:\n{:?}", project);
     // Get the first of each (because in practice there is one of each, matching)
     let reference = project.references.iter().next().unwrap();
