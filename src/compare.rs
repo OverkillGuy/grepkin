@@ -39,8 +39,6 @@ pub fn approximately_eq(reference: &gherkin::Feature, other: &gherkin::Feature) 
 ///
 /// Relies on conversion of gherkin::Feature->serde_json::Value, using Value
 /// trait to run treediff::diff
-#[allow(dead_code)]
-#[allow(clippy::just_underscores_and_digits, clippy::match_like_matches_macro)]
 pub fn json_diff_equals(reference: &gherkin::Feature, other: &gherkin::Feature) -> bool {
     let ref_json: serde_json::Value = serde_json::value::to_value(&reference).unwrap();
     let other_json: serde_json::Value = serde_json::value::to_value(&other).unwrap();
