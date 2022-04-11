@@ -1,4 +1,4 @@
-use grepkin::compare::approximately_eq;
+use grepkin::compare::{approximately_eq, json_diff_equals};
 use grepkin::GherkinProject;
 
 fn main() {
@@ -17,11 +17,12 @@ fn main() {
     );
     // Compare the reference to the actual features
     println!("Reference: {:?}\nParsed:    {:?}", &reference, &parsed);
-    let feature_equals: bool = approximately_eq(parsed, reference); // Igores these mismatching, focus on content
+    let feature_equals: bool = approximately_eq(&parsed, &reference); // Igores these mismatching, focus on content
     println!(
-        "Naive equality: {}\nCustom, approximate, match: {}",
+        "Naive equality: {}\nCustom, approximate, match: {}\njsondiff: {}",
         parsed == reference, // Mismatching span + linecol + path
-        feature_equals
+        feature_equals,
+        json_diff_equals(reference, parsed)
     );
     std::process::exit(if feature_equals { 0 } else { 1 });
 }

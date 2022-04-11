@@ -41,20 +41,55 @@ pub fn approximately_eq(reference: &gherkin::Feature, other: &gherkin::Feature) 
 /// trait to run treediff::diff
 #[allow(dead_code)]
 #[allow(clippy::just_underscores_and_digits, clippy::match_like_matches_macro)]
-fn json_diff_equals(reference: &gherkin::Feature, other: &gherkin::Feature) -> bool {
+pub fn json_diff_equals(reference: &gherkin::Feature, other: &gherkin::Feature) -> bool {
     let ref_json: serde_json::Value = serde_json::value::to_value(&reference).unwrap();
     let other_json: serde_json::Value = serde_json::value::to_value(&other).unwrap();
+    // TODO Use custom treediff::tools::Delegate instead of Recorder
     let mut record = treediff::tools::Recorder::default();
     treediff::diff(&ref_json, &other_json, &mut record);
-    if record.calls.len() != 1 {
-        return false;
+    // record.calls contains list of change type (CRUD-style)
+    for call in record.calls {
+        match call {
+            treediff::tools::ChangeType::Unchanged(_k, _v) => {}
+            // Any change is worth returning false immediately
+            treediff::tools::ChangeType::Added(k, v) => {
+                println!("Added! {:?}=>{:?}", k, v);
+                return false;
+            }
+            // TODO Split this func into fn json_diff() -> Vec<ChangeType> (test it)
+            // Then use that new func for bool. New func can be used for Display/Format = prettydiff
+            treediff::tools::ChangeType::Modified(k, v1, v2) => {
+                // k is a Vec<Key> = path inside struct
+                // last path element = key to possibly ignore: match it
+                match k.last().unwrap().to_string().as_str() {
+                    "path" => {
+                        println!("Modified path! Ignoring! was '{:?}', now '{:?}'", v1, v2);
+                    }
+                    "line" => {
+                        println!("Modified line! Ignoring! was '{:?}', now '{:?}'", v1, v2);
+                    }
+                    "col" => {
+                        println!("Modified col! Ignoring! was '{:?}', now '{:?}'", v1, v2);
+                    }
+                    "end" => {
+                        println!("Modified end! Ignoring! was '{:?}', now '{:?}'", v1, v2);
+                    }
+                    "start" => {
+                        println!("Modified start! Ignoring! was '{:?}', now '{:?}'", v1, v2);
+                    }
+                    _ => {
+                        println!("Modified non-path! {:?} was '{:?}', now '{:?}", k, v1, v2);
+                        return false;
+                    }
+                }
+            }
+            treediff::tools::ChangeType::Removed(k, v) => {
+                println!("RMed! {:?}=>{:?}", k, v);
+                return false;
+            }
+        }
     }
-    match record.calls.last().unwrap() {
-        // FIXME skip the Path, Linecol and Span for diff
-        // TODO Use custom treediff::tools::Delegate instead
-        treediff::tools::ChangeType::Unchanged(_, __) => true,
-        _ => false,
-    }
+    true
 }
 
 #[cfg(test)]
@@ -64,15 +99,19 @@ mod tests {
 
     /// Sample feature to do some comparisons against
     fn reference_feature() -> gherkin::Feature {
-        let reference_scenarios: Vec<gherkin::Scenario> = vec![gherkin::Scenario::builder()
-            .keyword("Scenario".to_string())
-            .name("Dummy scenario to be representative".to_string())
-            .steps(vec![gherkin::Step::builder()
-                .keyword("When".to_string())
-                .ty(gherkin::StepType::When)
-                .value("something happens".to_string())
-                .build()])
-            .build()];
+        let reference_scenarios: Vec<gherkin::Scenario> = vec![
+            gherkin::Scenario::builder()
+                .keyword("Scenario".to_string())
+                .name("Dummy scenario to be representative".to_string())
+                .steps(vec![
+                    gherkin::Step::builder()
+                        .keyword("When".to_string())
+                        .ty(gherkin::StepType::When)
+                        .value("something happens".to_string())
+                        .build(),
+                ])
+                .build(),
+        ];
         gherkin::Feature::builder()
             .keyword("Feature".to_string())
             .name("Matching a feature with another identical feature".to_string())
@@ -121,7 +160,9 @@ mod tests {
             approximately_eq(&reference, &cloned),
             "Similar feature (up to path) should match clone"
         );
-        // FIXME Known limitation of the current method, not ignoring Path differences
-        // assert!(json_diff_equals(&reference, &cloned), "Similar feature (up to path) should match clone");
+        assert!(
+            json_diff_equals(&reference, &cloned),
+            "Similar feature (up to path) should match clone"
+        );
     }
 }
