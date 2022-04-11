@@ -1,4 +1,5 @@
 pub mod compare;
+pub mod generate;
 mod parse;
 
 use std::collections::HashSet;
