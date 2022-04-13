@@ -46,48 +46,34 @@ pub fn json_diff_equals(reference: &gherkin::Feature, other: &gherkin::Feature) 
     let mut record = treediff::tools::Recorder::default();
     treediff::diff(&ref_json, &other_json, &mut record);
     // record.calls contains list of change type (CRUD-style)
-    for call in record.calls {
-        match call {
-            treediff::tools::ChangeType::Unchanged(_k, _v) => {}
-            // Any change is worth returning false immediately
-            treediff::tools::ChangeType::Added(k, v) => {
-                println!("Added! {:?}=>{:?}", k, v);
-                return false;
-            }
-            // TODO Split this func into fn json_diff() -> Vec<ChangeType> (test it)
-            // Then use that new func for bool. New func can be used for Display/Format = prettydiff
-            treediff::tools::ChangeType::Modified(k, v1, v2) => {
-                // k is a Vec<Key> = path inside struct
-                // last path element = key to possibly ignore: match it
-                match k.last().unwrap().to_string().as_str() {
-                    "path" => {
-                        println!("Modified path! Ignoring! was '{:?}', now '{:?}'", v1, v2);
-                    }
-                    "line" => {
-                        println!("Modified line! Ignoring! was '{:?}', now '{:?}'", v1, v2);
-                    }
-                    "col" => {
-                        println!("Modified col! Ignoring! was '{:?}', now '{:?}'", v1, v2);
-                    }
-                    "end" => {
-                        println!("Modified end! Ignoring! was '{:?}', now '{:?}'", v1, v2);
-                    }
-                    "start" => {
-                        println!("Modified start! Ignoring! was '{:?}', now '{:?}'", v1, v2);
-                    }
-                    _ => {
-                        println!("Modified non-path! {:?} was '{:?}', now '{:?}", k, v1, v2);
-                        return false;
-                    }
-                }
-            }
-            treediff::tools::ChangeType::Removed(k, v) => {
-                println!("RMed! {:?}=>{:?}", k, v);
-                return false;
+    let mut relevant_changes = record.calls;
+    // Filter to only keep the relevant (non-linecol/span) diffs
+    relevant_changes.retain(is_relevant_change);
+    relevant_changes.is_empty()
+}
+
+type GherkinDiff<'a> =
+    treediff::tools::ChangeType<'a, treediff::value::Key, serde_json::value::Value>;
+/// Checks if a diff item (from treediff::diff) is relevant Gherkin content
+///
+/// Ignores the linecol and spans and path changes
+fn is_relevant_change(change: &GherkinDiff) -> bool {
+    match change {
+        // Unchanged is irrelevant (not a change, happens when 0 diff exists)
+        treediff::tools::ChangeType::Unchanged(_k, _v) => false,
+        // Any ADD/RM is immediately relevant (mostly for vecs)
+        treediff::tools::ChangeType::Added(_k, _v) => true,
+        treediff::tools::ChangeType::Removed(_k, _v) => true,
+        // Modifications of linecol + spans are irrelevant: filter them
+        treediff::tools::ChangeType::Modified(k, _v1, _v2) => {
+            // k here is a Vec<Key> = path inside struct
+            // last path element = key to possibly ignore: match it
+            match k.last().unwrap().to_string().as_str() {
+                "path" | "line" | "col" | "end" | "start" => false,
+                _ => true,
             }
         }
     }
-    true
 }
 
 #[cfg(test)]

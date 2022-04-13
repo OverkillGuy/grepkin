@@ -1,4 +1,4 @@
-use grepkin::compare::approximately_eq;
+use grepkin::compare::json_diff_equals;
 /// Feature: Matching reference feature files to grepkin tests
 ///   As a developer
 ///   I need to check that reference Gherkin features match with grepkin test comments
@@ -27,7 +27,7 @@ fn test_match_reference_to_test() {
         .expect("Error getting test code comments");
     // And reference feature matches test code
     assert!(
-        approximately_eq(parsed, reference),
+        json_diff_equals(parsed, reference),
         "Reference feature should match test code comments"
     );
 }
