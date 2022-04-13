@@ -5,6 +5,8 @@ use grepkin::compare::json_diff_equals;
 ///   So that I know my project has the right features
 use grepkin::GherkinProject;
 
+// This feels like a quine but for grepkin: So cool!
+
 /// Scenario: Single reference feature matches up with test code
 #[test]
 fn test_match_reference_to_test() {

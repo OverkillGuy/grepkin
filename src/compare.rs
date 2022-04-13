@@ -50,10 +50,17 @@ pub fn json_diff_equals(reference: &gherkin::Feature, other: &gherkin::Feature) 
     // Filter to only keep the relevant (non-linecol/span) diffs
     relevant_changes.retain(is_relevant_change);
     relevant_changes.is_empty()
+    // TODO Split this function into json_diff -> Vec<GherkinDiff> then use it to return .is_empty()
+    // Problem: Lifetime of relevant_changes depends on &other_json!
 }
+
+// Apparently treediff lib doesn't deal with missing Step in Scenario
+// Instead of 1 removed, shows N-1 "modified" because not shift-aware.
+// TODO Reimplement this myself: from Feature name matching, to Scenario step grouping by type
 
 type GherkinDiff<'a> =
     treediff::tools::ChangeType<'a, treediff::value::Key, serde_json::value::Value>;
+
 /// Checks if a diff item (from treediff::diff) is relevant Gherkin content
 ///
 /// Ignores the linecol and spans and path changes
