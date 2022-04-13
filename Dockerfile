@@ -6,4 +6,4 @@ RUN cargo build --release
 
 FROM gcr.io/distroless/cc as runtime
 COPY --from=builder /app/target/release/grepkin /
-CMD ["./grepkin"]
+CMD ["/grepkin"]

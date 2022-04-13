@@ -40,8 +40,9 @@ GROUPID=$(shell id -g)
 
 run-docker: build-docker
 	docker run \
-		-v "${PWD}/tests/:/tests/" \
-		-v "${PWD}/features/:/features/" \
+	    -w /app \
+		-v "${PWD}/tests/:/app/tests/" \
+		-v "${PWD}/features/:/app/features/" \
 		-u "${USERID}:${GROUPID}" \
 		grepkin
 
